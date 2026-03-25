@@ -78,7 +78,7 @@ export default function QueuePage() {
             ) : queue.length ? (
               queue.slice(0, 200).map((c, idx) => {
                 const id = c?.id || c?.claim_id || c?.claimId || `row-${idx}`;
-                const score = c?.fraudScore ?? c?.fraud_score ?? c?.score ?? 0;
+                const score = c?.fraud?.score ?? c?.fraudScore ?? c?.fraud_score ?? c?.score ?? 0;
                 const tier = riskTier(score);
                 const amount = c?.amount || c?.claim_amount || c?.loss_amount;
                 return (

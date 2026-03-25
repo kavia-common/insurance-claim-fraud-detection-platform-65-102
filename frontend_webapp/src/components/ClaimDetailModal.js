@@ -23,7 +23,10 @@ export default function ClaimDetailModal({ claimId, isOpen, onClose, onUpdated }
   const [saveError, setSaveError] = useState(null);
   const [saveOk, setSaveOk] = useState(null);
 
-  const score = useMemo(() => claim?.fraudScore ?? claim?.fraud_score ?? claim?.score, [claim]);
+  const score = useMemo(
+    () => claim?.fraud?.score ?? claim?.fraudScore ?? claim?.fraud_score ?? claim?.score,
+    [claim]
+  );
   const tier = useMemo(() => riskTier(score ?? 0), [score]);
 
   useEffect(() => {
@@ -57,14 +60,20 @@ export default function ClaimDetailModal({ claimId, isOpen, onClose, onUpdated }
   }, [isOpen, claimId]);
 
   const explanations = useMemo(() => {
-    const exp = claim?.explanations || claim?.fraudExplanations || claim?.reasons || [];
+    // Backend stores explanations under claim.fraud.explanation (array of strings)
+    const exp =
+      claim?.fraud?.explanation ||
+      claim?.explanations ||
+      claim?.fraudExplanations ||
+      claim?.reasons ||
+      [];
     if (Array.isArray(exp)) return exp;
-    // sometimes backend returns object
     return Object.values(exp || {});
   }, [claim]);
 
   const signals = useMemo(() => {
-    const s = claim?.signals || claim?.fraudSignals || claim?.flags || [];
+    // Backend stores signal hits under claim.fraud.signals
+    const s = claim?.fraud?.signals || claim?.signals || claim?.fraudSignals || claim?.flags || [];
     if (Array.isArray(s)) return s;
     return Object.values(s || {});
   }, [claim]);
@@ -139,17 +148,22 @@ export default function ClaimDetailModal({ claimId, isOpen, onClose, onUpdated }
             </div>
             {explanations.length ? (
               <ul className="List">
-                {explanations.slice(0, 8).map((e, idx) => (
-                  <li key={idx} className="QueueItem" style={{ gap: 6 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                      <strong style={{ fontSize: 13 }}>{e?.title || e?.rule || e?.name || `Signal ${idx + 1}`}</strong>
-                      {e?.weight != null ? <Pill variant="warn">Weight: {String(e.weight)}</Pill> : null}
-                    </div>
-                    <div style={{ fontSize: 13, color: "var(--muted)" }}>
-                      {e?.description || e?.message || e?.explanation || String(e)}
-                    </div>
-                  </li>
-                ))}
+                {explanations.slice(0, 8).map((e, idx) => {
+                  const isObj = e && typeof e === "object";
+                  return (
+                    <li key={idx} className="QueueItem" style={{ gap: 6 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+                        <strong style={{ fontSize: 13 }}>
+                          {isObj ? e?.title || e?.rule || e?.name || `Signal ${idx + 1}` : `Explanation ${idx + 1}`}
+                        </strong>
+                        {isObj && e?.weight != null ? <Pill variant="warn">Weight: {String(e.weight)}</Pill> : null}
+                      </div>
+                      <div style={{ fontSize: 13, color: "var(--muted)" }}>
+                        {isObj ? e?.description || e?.message || e?.explanation || String(e) : String(e)}
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <div className="Toast">No explanations returned for this claim.</div>

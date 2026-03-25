@@ -74,7 +74,7 @@ export default function DashboardPage() {
       if (status && st !== status) return false;
 
       if (min !== null && !Number.isNaN(min)) {
-        const score = c?.fraudScore ?? c?.fraud_score ?? c?.score ?? 0;
+        const score = c?.fraud?.score ?? c?.fraudScore ?? c?.fraud_score ?? c?.score ?? 0;
         const pct = Number(score) <= 1 ? Number(score) * 100 : Number(score);
         if (pct < min) return false;
       }
@@ -88,13 +88,13 @@ export default function DashboardPage() {
       total === 0
         ? 0
         : claims.reduce((acc, c) => {
-            const s = c?.fraudScore ?? c?.fraud_score ?? c?.score ?? 0;
+            const s = c?.fraud?.score ?? c?.fraudScore ?? c?.fraud_score ?? c?.score ?? 0;
             const pct = Number(s) <= 1 ? Number(s) * 100 : Number(s);
             return acc + (Number.isFinite(pct) ? pct : 0);
           }, 0) / total;
 
     const high = claims.filter((c) => {
-      const s = c?.fraudScore ?? c?.fraud_score ?? c?.score ?? 0;
+      const s = c?.fraud?.score ?? c?.fraudScore ?? c?.fraud_score ?? c?.score ?? 0;
       const pct = Number(s) <= 1 ? Number(s) * 100 : Number(s);
       return pct >= 80;
     }).length;
@@ -242,7 +242,7 @@ export default function DashboardPage() {
                       const claimant = c?.claimant || c?.claimant_name || "—";
                       const lossDate = c?.lossDate || c?.loss_date || c?.date || "—";
                       const amount = c?.amount || c?.claim_amount || c?.loss_amount;
-                      const score = c?.fraudScore ?? c?.fraud_score ?? c?.score ?? 0;
+                      const score = c?.fraud?.score ?? c?.fraudScore ?? c?.fraud_score ?? c?.score ?? 0;
                       const tier = riskTier(score);
 
                       return (
@@ -305,7 +305,7 @@ export default function DashboardPage() {
               ) : queue.length ? (
                 queue.slice(0, 10).map((c, idx) => {
                   const id = c?.id || c?.claim_id || c?.claimId || `row-${idx}`;
-                  const score = c?.fraudScore ?? c?.fraud_score ?? c?.score ?? 0;
+                  const score = c?.fraud?.score ?? c?.fraudScore ?? c?.fraud_score ?? c?.score ?? 0;
                   const tier = riskTier(score);
                   const amount = c?.amount || c?.claim_amount || c?.loss_amount;
                   return (
